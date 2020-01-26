@@ -153,6 +153,11 @@ if __name__ == "__main__":
     TwitchAIDungeon()
 
 """
+TODO: 
+- Start and Restart adventures. Perhaps allow switching between adventures, as they are already stored on AI Dungeon.
+- Convert the output to a more readable format, when different perspectives are involved.
+- NSFW filter
+
 Actions, request method and api endpoint
 Session ID:     GET     https://api.aidungeon.io/sessions
 Delete Story:   DELETE  https://api.aidungeon.io/sessions/<id>
