@@ -1,6 +1,5 @@
 
 import json, os, logging
-logger = logging.getLogger(__name__)
 
 class FileErrorHandler:
     """
@@ -32,8 +31,10 @@ class FileErrorHandler:
                                         "Nickname": "<name>",
                                         "Authentication": "oauth:<auth>",
                                         "Cooldown": 20,
+                                        "X-Access-Token": "<accessToken>"
                                     }
                     f.write(json.dumps(standard_dict, indent=4, separators=(",", ": ")))
+                    logger.error("No settings.json file was found. A new one has been generated.")
                     raise ValueError("Please fix your settings.json file that was just generated.")
         return False
 
@@ -46,6 +47,7 @@ class Settings:
         with FileErrorHandler():
             # Try to load the file using json.
             # And pass the data to the Bot class instance if this succeeds.
+            logger.debug("Starting setting settings...")
             with open(Settings.PATH, "r") as f:
                 settings = f.read()
                 data = json.loads(settings)
@@ -54,17 +56,21 @@ class Settings:
                                 data["Channel"],
                                 data["Nickname"],
                                 data["Authentication"],
-                                data["Cooldown"])
+                                data["Cooldown"],
+                                data["X-Access-Token"])
+                logger.debug("Finished setting settings.")
     
     @staticmethod
     def update_cooldown(cooldown):
         with FileErrorHandler():
+            logger.info(f"Updating cooldown to {cooldown}s...")
             with open(Settings.PATH, "r") as f:
                 settings = f.read()
                 data = json.loads(settings)
             data["Cooldown"] = cooldown
             with open(Settings.PATH, "w") as f:
                 f.write(json.dumps(data, indent=4, separators=(",", ": ")))
+            logger.info(f"Finished updating cooldown.")
 
     @staticmethod
     def get_channel():
@@ -73,3 +79,9 @@ class Settings:
                 settings = f.read()
                 data = json.loads(settings)
                 return data["Channel"].replace("#", "").lower()
+
+    @staticmethod    
+    def set_logger():
+        # Update logger. This is required as this class is used to set up the logging file
+        global logger
+        logger = logging.getLogger(__name__)

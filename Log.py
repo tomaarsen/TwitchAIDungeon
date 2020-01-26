@@ -17,6 +17,7 @@ class Log():
 
         # If you have a logging config like me, use it
         if "PYTHON_LOGGING_CONFIG" in os.environ:
+            # Output to file
             logging.config.fileConfig(os.environ.get("PYTHON_LOGGING_CONFIG"), defaults={"logfilename": this_file.replace(".py", "_") + channel + ".log"})
         else:
             # If you don't, use a standard config that outputs some INFO in the console

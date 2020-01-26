@@ -4,5 +4,6 @@
     "Channel": "#<channel>",
     "Nickname": "<name>",
     "Authentication": "oauth:<auth>",
-    "Cooldown": 20
+    "Cooldown": 20,
+    "X-Access-Token": "<accessToken>"
 }
