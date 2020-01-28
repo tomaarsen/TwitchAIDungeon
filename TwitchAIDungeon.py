@@ -10,6 +10,8 @@ from TwitchWebsocket import TwitchWebsocket
 from Database import Database
 from api import API
 
+from profanityfilter import ProfanityFilter
+
 class TwitchAIDungeon:
     def __init__(self):
         # Initialize variables to None
@@ -22,6 +24,9 @@ class TwitchAIDungeon:
         self.access_token = None
         self.cooldown = 0
         self.last_command_time = 0
+        with open("censored_words.txt", "r") as f:
+            censor = [l.replace("\n", "") for l in f.readlines()]
+            self.pf = ProfanityFilter(custom_censor_list=censor)
 
         # Create an Api instance to connect to AI Dungeon 2.
         logging.debug("Creating API instance.")
@@ -72,6 +77,8 @@ class TwitchAIDungeon:
                 self.command_event(m)
             elif m.message.startswith(("!say", "!talk", "!ask")):
                 self.command_say(m)
+            elif m.message.startswith("!help"):
+                self.command_help(m)
 
     def extract_message(self, m):
         try:
@@ -92,7 +99,9 @@ class TwitchAIDungeon:
             return True
         # If the cooldown has been hit, and the user has not said they don't want to be whispered, then whisper them the cooldown.
         if not self.db.check_whisper_ignore(m.user):
-            self.ws.send_whisper(m.user, f"Cooldown hit: {difference:.2f} out of {self.cooldown:.0f}s remaining. !nopm to stop these cooldown pm's.")
+            out = f"Cooldown hit: {difference:.2f} out of {self.cooldown:.0f}s remaining. !nopm to stop these cooldown pm's."
+            logging.debug(out)
+            self.ws.send_whisper(m.user, out)
         return False
 
     def command_action(self, message, prefix="", postfix="", custom_output="", force=False):
@@ -100,15 +109,29 @@ class TwitchAIDungeon:
 
         # Function to handle communication between API and this class
         if message or force:
-            # Set the last_command_time to the current time for cooldown
-            self.last_command_time = time.time()
 
             logging.debug(f"Calling api.say with \"{prefix + message + postfix}\"")
-            out = self.api.say(prefix + message + postfix)
-            out = self.parse_output(out)
-            # If a custom output is warranted for this action type, use that as output instead
-            if custom_output:
-                out = custom_output
+            # Check if the input contains a banned word
+            if self.is_clean(message):
+                # Set the last_command_time to the current time for cooldown
+                self.last_command_time = time.time()
+
+                # Get the actual output from the API
+                out = self.api.say(prefix + message + postfix)
+
+                # If a custom output is warranted for this action type, use that as output instead
+                if custom_output:
+                    out = custom_output
+                else:
+                    # Censor the output
+                    out = self.censor(out)
+                    
+                    # Convert to a better format, eg remove newlines.
+                    out = self.parse_output(out)
+
+            else:
+                logging.warning(f"The input \"{message}\" was filtered out.")
+                out = "This input contained a banned word or phrase!"
         else:
             out = "Please also enter a message alongside your command."
         
@@ -120,6 +143,17 @@ class TwitchAIDungeon:
             out = "AI Dungeon 2 responded with an empty message, sadly."
             logging.error(out)
             self.ws.send_message(out)
+
+    def is_clean(self, message):
+        # True if message does not contain a banned word.
+        return self.pf.is_clean(message)
+
+    def censor(self, message):
+        # Replace banned phrase with ***
+        censored = self.pf.censor(message)
+        if message != censored:
+            logging.warning(f"Censored \"{message}\" into \"{censored}\".")
+        return censored
 
     def command_do(self, m):
         if self.check_cooldown(m):
@@ -144,6 +178,9 @@ class TwitchAIDungeon:
         if self.check_cooldown(m):
             self.command_action(self.extract_message(m), prefix="\"", postfix="\"")
 
+    def command_help(self, m):
+        self.ws.send_message("!do <text> to take an action. !remember <text> to remember `text`. !revert to revert the last action. !event <text> to have `text` occur. !say <text> to speak `text`.")
+
     def parse_output(self, message):
         # TODO: Improve upon this. 
         # Make it so conversations with different perspectives are clearly separated.
@@ -156,7 +193,9 @@ if __name__ == "__main__":
 TODO: 
 - Start and Restart adventures. Perhaps allow switching between adventures, as they are already stored on AI Dungeon.
 - Convert the output to a more readable format, when different perspectives are involved.
-- NSFW filter
+- Fetch API results asyncronously
+- Allow saving of all story data to a pastebin for chat.
+- Prevent the bot from saying commands
 
 Actions, request method and api endpoint
 Session ID:     GET     https://api.aidungeon.io/sessions
