@@ -127,3 +127,4 @@ dmypy.json
 # Custom
 old
 *.db
+settings_backup.json

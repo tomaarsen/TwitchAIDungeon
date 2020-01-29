@@ -1,5 +1,5 @@
 
-import time, logging
+import time, logging, threading
 
 from Settings import Settings
 from Log import Log
@@ -20,10 +20,12 @@ class TwitchAIDungeon:
         self.chan = None
         self.nick = None
         self.auth = None
-        capability = []
+        capability = ["tags"]
         self.access_token = None
         self.cooldown = 0
         self.last_command_time = 0
+        self.allowed_ranks = []
+        self.allowed_users = []
         with open("censored_words.txt", "r") as f:
             censor = [l.replace("\n", "") for l in f.readlines()]
             self.pf = ProfanityFilter(custom_censor_list=censor)
@@ -57,11 +59,10 @@ class TwitchAIDungeon:
         logging.debug("Starting Websocket connection.")
         self.ws.start_bot()
 
-    def set_settings(self, host, port, chan, nick, auth, cooldown, access_token):
-        self.host, self.port, self.chan, self.nick, self.auth, self.cooldown, self.access_token = host, port, chan, nick, auth, cooldown, access_token
+    def set_settings(self, host, port, chan, nick, auth, cooldown, access_token, allowed_ranks, allowed_users):
+        self.host, self.port, self.chan, self.nick, self.auth, self.cooldown, self.access_token, self.allowed_ranks, self.allowed_users = host, port, chan, nick, auth, cooldown, access_token, [rank.lower() for rank in allowed_ranks], [user.lower() for user in allowed_users]
 
     def message_handler(self, m):
-        #print(m)
         if m.type == "PRIVMSG":
             #if m.message.startswith("hello"):
             #    out = '> \nShe points to a spot on the wall. "There, there\'s a little alcove behind that lock. There you can find the key."\n> You agree to help her unlock it.\n"I\'ll get back to you as soon as I can."'
@@ -79,6 +80,8 @@ class TwitchAIDungeon:
                 self.command_say(m)
             elif m.message.startswith("!help"):
                 self.command_help(m)
+            elif m.message.startswith("!restart") and self.check_permissions(m):
+                self.command_restart(m)
 
     def extract_message(self, m):
         try:
@@ -87,6 +90,12 @@ class TwitchAIDungeon:
         except ValueError:
             # If no spaces, return empty string
             return ""
+
+    def check_permissions(self, m):
+        for rank in self.allowed_ranks:
+            if rank in m.tags["badges"]:
+                return True
+        return m.user.lower() in self.allowed_users
 
     def check_cooldown(self):
         # True iff it has been `self.cooldown` seconds since the last command use.
@@ -104,6 +113,23 @@ class TwitchAIDungeon:
             self.ws.send_whisper(m.user, out)
         return False
 
+    def response_task(self, message, prefix, postfix, custom_output):
+        # Get the actual output from the API
+        out = self.api.say(prefix + message + postfix)
+
+        # If a custom output is warranted for this action type, use that as output instead
+        if custom_output:
+            out = custom_output
+        else:
+            # Censor the output
+            out = self.censor(out)
+            
+            # Convert to a better format, eg remove newlines.
+            out = self.parse_output(out)
+
+        logging.info(f"Chat output: {out}")
+        self.ws.send_message(out)
+
     def command_action(self, message, prefix="", postfix="", custom_output="", force=False):
         # If force is True, then we will communicate with the API even if the message is empty.
 
@@ -116,19 +142,10 @@ class TwitchAIDungeon:
                 # Set the last_command_time to the current time for cooldown
                 self.last_command_time = time.time()
 
-                # Get the actual output from the API
-                out = self.api.say(prefix + message + postfix)
-
-                # If a custom output is warranted for this action type, use that as output instead
-                if custom_output:
-                    out = custom_output
-                else:
-                    # Censor the output
-                    out = self.censor(out)
-                    
-                    # Convert to a better format, eg remove newlines.
-                    out = self.parse_output(out)
-
+                # Create a threading daemon task for sending responses to the API
+                t = threading.Thread(target=self.response_task, args=(message, prefix, postfix, custom_output), daemon=True)
+                t.start()
+                return
             else:
                 logging.warning(f"The input \"{message}\" was filtered out.")
                 out = "This input contained a banned word or phrase!"
@@ -161,9 +178,9 @@ class TwitchAIDungeon:
             self.command_action(self.extract_message(m), force=True)
 
     def command_remember(self, m):
-        if self.check_cooldown(m):
-            message = self.extract_message(m)
-            self.command_action(message, prefix="/remember ", custom_output=f"Added \"{message}\" to game's memory.")
+        #if self.check_cooldown(m):
+        message = self.extract_message(m)
+        self.command_action(message, prefix="/remember ", custom_output=f"Added \"{message}\" to game's memory.")
 
     def command_revert(self, m):
         # Note that reverting is not affected by the cooldown and can be done whenever.
@@ -186,16 +203,37 @@ class TwitchAIDungeon:
         # Make it so conversations with different perspectives are clearly separated.
         return message.replace("\n", " ")
 
+    def restart_task(self):
+        # Get a new session_id and story from a new adventure
+        session_id, story = self.api.start()
+        # Only if successful
+        if session_id:
+            self.session_id = session_id
+            self.ws.send_message(story)
+            logging.debug("Successfully started new story.")
+            logging.info(story)
+        else:
+            self.ws.send_message("Failed to restart story.")
+            logging.error("Failed to start new story.")
+
+    def command_restart(self, m):
+        # Set the last_command_time to the current time for cooldown
+        self.last_command_time = time.time()
+
+        # Asyncronously start a new story
+        t = threading.Thread(target=self.restart_task, daemon=True)
+        t.start()
+
 if __name__ == "__main__":
     TwitchAIDungeon()
 
 """
 TODO: 
-- Start and Restart adventures. Perhaps allow switching between adventures, as they are already stored on AI Dungeon.
 - Convert the output to a more readable format, when different perspectives are involved.
-- Fetch API results asyncronously
+  - This has not proven to be much of an issue thus far
 - Allow saving of all story data to a pastebin for chat.
 - Prevent the bot from saying commands
+- Allow (other) custom stories
 
 Actions, request method and api endpoint
 Session ID:     GET     https://api.aidungeon.io/sessions

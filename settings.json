@@ -5,5 +5,11 @@
     "Nickname": "<name>",
     "Authentication": "oauth:<auth>",
     "Cooldown": 20,
-    "X-Access-Token": "<accessToken>"
+    "X-Access-Token": "<accessToken>",
+    "AllowedRanks": [
+        "broadcaster",
+        "moderator",
+        "vip"
+    ],
+    "AllowedUsers": []
 }

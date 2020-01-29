@@ -1,5 +1,7 @@
 
 import logging, requests, json
+# Disable info logs from urllib3 used by requests
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 class API:
@@ -41,3 +43,23 @@ class API:
         else:
             logger.error(f"Response code was {response.status_code}.")
             return ""
+
+    def start(self):
+        logger.debug("Starting a new custom adventure...")
+        # Get the headers using the access token
+        headers = {"X-Access-Token": self.taid.access_token}
+        json_data = {
+            "storyMode": "custom",
+            "characterType": None,
+            "name": None,
+            "customPrompt": "We are Malfius Yabeb in the NLSS Universe. We live in Skokie Illinois, and our task is to find the ultimate Team Unity Tuesday game. We start out in Vancouver hanging out with Ryan Gary.",
+            "promptId": None
+        }
+        response = requests.post("https://api.aidungeon.io/sessions", json=json_data, headers=headers)
+        if response.status_code == 200:
+            content = json.loads(response.text)
+            logger.debug("Started a new custom adventure.")
+            return content["id"], content["story"][0]["value"]
+        else:
+            logger.error(f"Response code was {response.status_code}.")
+            return None, None

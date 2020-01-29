@@ -17,7 +17,6 @@ class FileErrorHandler:
             if exc_type in (ValueError, json.decoder.JSONDecodeError):
                 # If there is a ValueError or json.decoder.JSONDecodeError, 
                 # we want to let the user know their settings.json file is incorrect.
-                logger.error("There is an error in your settings file.")
                 raise ValueError("There is an error in your settings file.")
 
             elif exc_type is FileNotFoundError:
@@ -31,10 +30,15 @@ class FileErrorHandler:
                                         "Nickname": "<name>",
                                         "Authentication": "oauth:<auth>",
                                         "Cooldown": 20,
-                                        "X-Access-Token": "<accessToken>"
+                                        "X-Access-Token": "<accessToken>",
+                                        "AllowedRanks": [
+                                            "broadcaster",
+                                            "moderator", 
+                                            "vip"
+                                        ],
+                                        "AllowedUsers": []
                                     }
                     f.write(json.dumps(standard_dict, indent=4, separators=(",", ": ")))
-                    logger.error("No settings.json file was found. A new one has been generated.")
                     raise ValueError("Please fix your settings.json file that was just generated.")
         return False
 
@@ -57,7 +61,9 @@ class Settings:
                                 data["Nickname"],
                                 data["Authentication"],
                                 data["Cooldown"],
-                                data["X-Access-Token"])
+                                data["X-Access-Token"],
+                                data["AllowedRanks"],
+                                data["AllowedUsers"])
                 logger.debug("Finished setting settings.")
     
     @staticmethod
@@ -80,7 +86,7 @@ class Settings:
                 data = json.loads(settings)
                 return data["Channel"].replace("#", "").lower()
 
-    @staticmethod    
+    @staticmethod
     def set_logger():
         # Update logger. This is required as this class is used to set up the logging file
         global logger
