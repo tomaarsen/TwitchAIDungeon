@@ -26,6 +26,7 @@ class TwitchAIDungeon:
         self.last_command_time = 0
         self.allowed_ranks = []
         self.allowed_users = []
+        self.custom_prompt = ""
         with open("censored_words.txt", "r") as f:
             censor = [l.replace("\n", "") for l in f.readlines()]
             self.pf = ProfanityFilter(custom_censor_list=censor)
@@ -59,8 +60,8 @@ class TwitchAIDungeon:
         logging.debug("Starting Websocket connection.")
         self.ws.start_bot()
 
-    def set_settings(self, host, port, chan, nick, auth, cooldown, access_token, allowed_ranks, allowed_users):
-        self.host, self.port, self.chan, self.nick, self.auth, self.cooldown, self.access_token, self.allowed_ranks, self.allowed_users = host, port, chan, nick, auth, cooldown, access_token, [rank.lower() for rank in allowed_ranks], [user.lower() for user in allowed_users]
+    def set_settings(self, host, port, chan, nick, auth, cooldown, access_token, allowed_ranks, allowed_users, custom_prompt):
+        self.host, self.port, self.chan, self.nick, self.auth, self.cooldown, self.access_token, self.allowed_ranks, self.allowed_users, self.custom_prompt = host, port, chan, nick, auth, cooldown, access_token, [rank.lower() for rank in allowed_ranks], [user.lower() for user in allowed_users], custom_prompt
 
     def message_handler(self, m):
         if m.type == "PRIVMSG":
@@ -127,8 +128,17 @@ class TwitchAIDungeon:
             # Convert to a better format, eg remove newlines.
             out = self.parse_output(out)
 
-        logging.info(f"Chat output: {out}")
-        self.ws.send_message(out)
+        if out:
+            logging.info(f"Chat output: {out}")
+            # If `out` could be considered a command, 
+            # then prepend a space which does not get filtered out by twitch, 
+            # which should prevent the message as being considered a command
+            if out.startswith(("!", "~", ".", "/", "\\")):
+                self.ws.send_message("⠀" + out)
+        else:
+            out = "AI Dungeon 2 responded with an empty message, sadly."
+            logging.error(out)
+            self.ws.send_message(out)
 
     def command_action(self, message, prefix="", postfix="", custom_output="", force=False):
         # If force is True, then we will communicate with the API even if the message is empty.
@@ -146,20 +156,14 @@ class TwitchAIDungeon:
                 t = threading.Thread(target=self.response_task, args=(message, prefix, postfix, custom_output), daemon=True)
                 t.start()
                 return
-            else:
-                logging.warning(f"The input \"{message}\" was filtered out.")
-                out = "This input contained a banned word or phrase!"
+            
+            logging.warning(f"The input \"{message}\" was filtered out.")
+            out = "This input contained a banned word or phrase!"
         else:
             out = "Please also enter a message alongside your command."
         
-        if out:
-            logging.info(f"Chat output: {out}")
-            self.ws.send_message(out)
-
-        else:
-            out = "AI Dungeon 2 responded with an empty message, sadly."
-            logging.error(out)
-            self.ws.send_message(out)
+        logging.info(f"Chat output: {out}")
+        self.ws.send_message(out)
 
     def is_clean(self, message):
         # True if message does not contain a banned word.
@@ -205,7 +209,7 @@ class TwitchAIDungeon:
 
     def restart_task(self):
         # Get a new session_id and story from a new adventure
-        session_id, story = self.api.start()
+        session_id, story = self.api.start(self.custom_prompt)
         # Only if successful
         if session_id:
             self.session_id = session_id
@@ -232,8 +236,6 @@ TODO:
 - Convert the output to a more readable format, when different perspectives are involved.
   - This has not proven to be much of an issue thus far
 - Allow saving of all story data to a pastebin for chat.
-- Prevent the bot from saying commands
-- Allow (other) custom stories
 
 Actions, request method and api endpoint
 Session ID:     GET     https://api.aidungeon.io/sessions

@@ -1,5 +1,7 @@
 
 import json, os, logging
+# Note, we do not use `logger = logging.getLogger(__name__)` 
+# here due the logger itself using this module for a logging file name
 
 class FileErrorHandler:
     """
@@ -36,7 +38,8 @@ class FileErrorHandler:
                                             "moderator", 
                                             "vip"
                                         ],
-                                        "AllowedUsers": []
+                                        "AllowedUsers": [],
+                                        "CustomPrompt": "You are Bot, a wizard living in the kingdom of Larion. You have a staff and a spellbook. You finish your long journey and finally arrive at the ruin you've been looking for. You look around and see that it's not much different than when you left it. A few more trees here and there, but nothing has changed."
                                     }
                     f.write(json.dumps(standard_dict, indent=4, separators=(",", ": ")))
                     raise ValueError("Please fix your settings.json file that was just generated.")
@@ -63,7 +66,8 @@ class Settings:
                                 data["Cooldown"],
                                 data["X-Access-Token"],
                                 data["AllowedRanks"],
-                                data["AllowedUsers"])
+                                data["AllowedUsers"],
+                                data["CustomPrompt"])
                 logger.debug("Finished setting settings.")
     
     @staticmethod

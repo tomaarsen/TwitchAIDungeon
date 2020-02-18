@@ -11,5 +11,6 @@
         "moderator",
         "vip"
     ],
-    "AllowedUsers": []
+    "AllowedUsers": [],
+    "CustomPrompt": "You are Bot, a wizard living in the kingdom of Larion. You have a staff and a spellbook. You finish your long journey and finally arrive at the ruin you've been looking for. You look around and see that it's not much different than when you left it. A few more trees here and there, but nothing has changed."
 }
