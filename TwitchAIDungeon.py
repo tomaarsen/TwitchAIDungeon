@@ -65,10 +65,6 @@ class TwitchAIDungeon:
 
     def message_handler(self, m):
         if m.type == "PRIVMSG":
-            #if m.message.startswith("hello"):
-            #    out = '> \nShe points to a spot on the wall. "There, there\'s a little alcove behind that lock. There you can find the key."\n> You agree to help her unlock it.\n"I\'ll get back to you as soon as I can."'
-            #    out = self.parse_output(out)
-            #    self.ws.send_message(out)
             if m.message.startswith("!do"):
                 self.command_do(m)
             elif m.message.startswith("!remember"):
@@ -134,7 +130,8 @@ class TwitchAIDungeon:
             # then prepend a space which does not get filtered out by twitch, 
             # which should prevent the message as being considered a command
             if out.startswith(("!", "~", ".", "/", "\\")):
-                self.ws.send_message("⠀" + out)
+                out = "⠀" + out
+            self.ws.send_message(out)
         else:
             out = "AI Dungeon 2 responded with an empty message, sadly."
             logging.error(out)
