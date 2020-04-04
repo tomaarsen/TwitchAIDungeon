@@ -76,11 +76,11 @@ Lisa looks at you and smiles. She says "Heh, he is indeed a nice fellow. He save
 
 ## Tasks
 
-- [ ] Manage to take advantage of the API to send messages to AI Dungeon.
+- [x] Manage to take advantage of the API to send messages to AI Dungeon.
   - [x] Send and receive messages.
-  - [ ] Start and restart adventures.
-  - [ ] (Potentially) Refresh the `X-Access-Token`.
-- [ ] Parse the output from the AI Dungeon 2 API to a format viable for Twitch chat.
-- [ ] Use my `TwitchWebsocket` to create a simple bot which tasks the aforementioned to request the API.
-  - [ ] Implement all commands.
-  - [ ] Implement a NSFW filter.
+  - [x] Start and restart adventures.
+- [ ] (Potentially) Refresh the `X-Access-Token`.
+- [x] Parse the output from the AI Dungeon 2 API to a format viable for Twitch chat.
+- [x] Use my `TwitchWebsocket` to create a simple bot which tasks the aforementioned to request the API.
+  - [x] Implement all commands.
+  - [x] Implement a NSFW filter.
