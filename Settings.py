@@ -1,7 +1,8 @@
 
 import json, os, logging
-# Note, we do not use `logger = logging.getLogger(__name__)` 
-# here due the logger itself using this module for a logging file name
+logger = logging.getLogger(__name__)
+# Note, this logger will be overridden due the logger 
+# itself using this module for a logging file name
 
 class FileErrorHandler:
     """

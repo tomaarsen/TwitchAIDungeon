@@ -8,7 +8,7 @@ Settings.set_logger()
 
 from TwitchWebsocket import TwitchWebsocket
 from Database import Database
-from api import API
+from API import API
 
 from profanityfilter import ProfanityFilter
 
