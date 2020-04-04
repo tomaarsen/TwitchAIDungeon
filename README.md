@@ -11,7 +11,7 @@ Due to the potential NSFW nature of AI Dungeon 2, it is possible to pass a black
 Furthermore, there is a configurable cooldown between actions to prevent spam. See [Settings](#settings) for more information.
 
 ### Notes
-- [AI Dungeon 2](https://play.aidungeon.io/) is often overloaded, and responds slowly to messages. As a result, so will the bot. It may take several seconds for the bot to respond.<br>
+- AI Dungeon 2 is often overloaded, and responds slowly to messages. As a result, so will the bot. It may take several seconds for the bot to respond.<br>
 - AI Dungeon 2 sometimes seems to ignore the action you take in favour of continuing storyline.
   - This seems to be more common the more actions have been taken. At that point its best to restart the adventure.
 
