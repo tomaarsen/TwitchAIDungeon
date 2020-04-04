@@ -6,7 +6,7 @@
 
 When the bot has started, it will start listening to chat messages in the channel listed in the `settings.json` file. Whenever a chat member uses one of the accepted commands, the bot will forward the action to [AI Dungeon 2](https://play.aidungeon.io/), a procedurally generated text-based adventure game, and post the result of their action in Twitch chat. This way, Twitch chat will be able to play AI Dungeon 2.
 
-Due to the potential NSFW nature of AI Dungeon 2, it is possible to pass a blacklist to the bot. This way, inputs containing a banned word or phrase will not be sent to AI Dungeon 2, and output containing a banned word or phrase will be censored with stars. See [Blacklist](#blacklist) for more information.
+Due to the potential NSFW nature of AI Dungeon 2, it is possible to pass a blacklist to the bot. This way, inputs containing a banned word or phrase will not be sent to AI Dungeon 2, and outputs containing a banned word or phrase will be censored with stars. See [Blacklist](#blacklist) for more information.
 
 Furthermore, there is a configurable cooldown between actions to prevent spam. See [Settings](#settings) for more information.
 
