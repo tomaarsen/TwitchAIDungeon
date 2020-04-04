@@ -27,7 +27,7 @@ class TwitchAIDungeon:
         self.allowed_ranks = []
         self.allowed_users = []
         self.custom_prompt = ""
-        with open("censored_words.txt", "r") as f:
+        with open("blacklist.txt", "r") as f:
             censor = [l.replace("\n", "") for l in f.readlines()]
             self.pf = ProfanityFilter(custom_censor_list=censor)
 
@@ -64,7 +64,9 @@ class TwitchAIDungeon:
         self.host, self.port, self.chan, self.nick, self.auth, self.cooldown, self.access_token, self.allowed_ranks, self.allowed_users, self.custom_prompt = host, port, chan, nick, auth, cooldown, access_token, [rank.lower() for rank in allowed_ranks], [user.lower() for user in allowed_users], custom_prompt
 
     def message_handler(self, m):
-        if m.type == "PRIVMSG":
+        if m.type == "366":
+            logging.info(f"Successfully joined channel: #{m.channel}")
+        elif m.type == "PRIVMSG":
             if m.message.startswith("!do"):
                 self.command_do(m)
             elif m.message.startswith("!remember"):
