@@ -1,6 +1,11 @@
 # TwitchAIDungeon
  Twitch Bot allowing chat to play [AI Dungeon 2](https://play.aidungeon.io/).
  
+# Important
+
+The AI Dungeon API has changed since the creation of this project, and as a result **it no longer works!**
+I'm unable to prioritize this project right now, but I'll leave it un-archived as I'm open to changes, and might have the time to revisit this project in the future.
+ 
 --- 
 # Explanation
 
