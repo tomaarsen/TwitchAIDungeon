@@ -28,7 +28,7 @@ Furthermore, there is a configurable cooldown between actions to prevent spam. S
 # Commands
 Chat members can perform actions in AI Dungeon 2 by using the following commands:
 | *Command* | *Example* | *Use* |
-| - | - | - |
+| -- | -- | -- |
 | `!do [action]` | `!do detonate the planet venus using the death star`| Actions we take. |
 | `!event [event]` | `!event suddenly your mother in law shows up` | Actions not performed by us. |
 | `!say [message]` | `!say do you smell that?` | Whenever we want to speak. |
