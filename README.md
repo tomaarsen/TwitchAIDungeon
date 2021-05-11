@@ -1,6 +1,8 @@
 # TwitchAIDungeon
- Twitch Bot allowing chat to play [AI Dungeon 2](https://play.aidungeon.io/).
- 
+Twitch Bot allowing chat to play [AI Dungeon 2](https://play.aidungeon.io/).
+
+---
+
 # Important
 
 The AI Dungeon API has changed since the creation of this project, and as a result **it no longer works!**
@@ -15,6 +17,8 @@ Due to the potential NSFW nature of AI Dungeon 2, it is possible to pass a black
 
 Furthermore, there is a configurable cooldown between actions to prevent spam. See [Settings](#settings) for more information.
 
+---
+
 ### Notes
 - AI Dungeon 2 is often overloaded, and responds slowly to messages. As a result, so will the bot. It may take several seconds for the bot to respond.<br>
 - AI Dungeon 2 sometimes seems to ignore the action you take in favour of continuing storyline.
@@ -23,7 +27,7 @@ Furthermore, there is a configurable cooldown between actions to prevent spam. S
 ---
 # Commands
 Chat members can perform actions in AI Dungeon 2 by using the following commands:
-| *Command* | *Example* | *Use*|
+| *Command* | *Example* | *Use* |
 | - | - | - |
 | `!do [action]` | `!do detonate the planet venus using the death star`| Actions we take. |
 | `!event [event]` | `!event suddenly your mother in law shows up` | Actions not performed by us. |
@@ -72,6 +76,8 @@ This bot is controlled by a `settings.json` file, which looks like:
 
 I got my real OAuth token from https://twitchapps.com/tmi/.
 
+---
+
 ### X-Access-Token
 
 Getting the X-Access-Token is slightly more involved. Note that I'm doing these steps on Firefox, though the steps should be similar on other browsers:
@@ -83,6 +89,8 @@ Getting the X-Access-Token is slightly more involved. Note that I'm doing these 
 - Browse through the options until you see `LOGGED_IN_USER`.
 - Click on the corresponding value, and look for "accessToken".
 - Copy the value there, which is likely along the likes of "zhk4v79g2-m6t6-6f06-6hqd-qc5pdyfp1yx3", and use it as your value for X-Access-Token.
+
+---
 
 # Blacklist
 
